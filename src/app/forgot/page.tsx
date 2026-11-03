@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createImplicitClient } from "@/lib/supabase/implicit";
 
 async function sendReset(formData: FormData) {
   "use server";
-  const supabase = await createClient();
+  const supabase = createImplicitClient();
   const origin = (await headers()).get("origin");
   await supabase.auth.resetPasswordForEmail(String(formData.get("email")), {
-    redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
+    redirectTo: `${origin}/auth/hash?next=${encodeURIComponent("/reset-password")}`,
   });
   // same message whether or not the account exists
   redirect("/forgot?sent=1");
@@ -22,7 +22,7 @@ export default async function ForgotPage({ searchParams }: { searchParams: Promi
         <h1 className="mb-1 text-2xl font-bold">نسيت كلمة المرور</h1>
         {sent ? (
           <p className="mt-4 rounded-lg bg-brand-50 p-3 text-sm text-brand-800">
-            إذا كان البريد مسجّلًا عندنا، وصلك رابط لتعيين كلمة مرور جديدة. افتحه من نفس هذا الجهاز والمتصفح.
+            إذا كان البريد مسجّلًا عندنا، وصلك رابط لتعيين كلمة مرور جديدة. تقدر تفتحه من أي جهاز.
           </p>
         ) : (
           <>

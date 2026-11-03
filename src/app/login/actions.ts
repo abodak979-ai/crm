@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createImplicitClient } from "@/lib/supabase/implicit";
 
 /** Only allow same-site relative paths as post-login destinations. */
 function safeNext(formData: FormData) {
@@ -18,24 +19,26 @@ export async function signIn(formData: FormData) {
     password: String(formData.get("password")),
   });
   if (error) {
-    redirect(`/login?next=${encodeURIComponent(next)}&error=` + encodeURIComponent("البريد أو كلمة المرور غير صحيحة"));
+    redirect(`/login?next=${encodeURIComponent(next)}&error=` + encodeURIComponent("البريد أو كلمة المرور غير صحيحة. إذا نسيتها اضغط «نسيت كلمة المرور؟» تحت."));
   }
   redirect(next);
 }
 
 export async function signUp(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createImplicitClient();
   const next = safeNext(formData);
   const origin = (await headers()).get("origin");
-  const { data, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email: String(formData.get("email")),
     password: String(formData.get("password")),
     options: {
       data: { full_name: String(formData.get("full_name") ?? "") },
-      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      emailRedirectTo: `${origin}/auth/hash?next=${encodeURIComponent(next === "/" ? "/onboarding" : next)}`,
     },
   });
   if (error) redirect(`/login?mode=signup&next=${encodeURIComponent(next)}&error=` + encodeURIComponent(error.message));
-  if (!data.session) redirect("/login?notice=" + encodeURIComponent("أرسلنا رابط التفعيل إلى بريدك"));
-  redirect(next === "/" ? "/onboarding" : next);
+  redirect(
+    "/login?notice=" +
+      encodeURIComponent("أرسلنا رابط التفعيل إلى بريدك. إذا كان البريد مسجّلًا من قبل فادخل مباشرة أو استخدم «نسيت كلمة المرور»."),
+  );
 }
