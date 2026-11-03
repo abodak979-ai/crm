@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/deals", label: "الصفقات" },
   { href: "/tasks", label: "المهام" },
   { href: "/quotes", label: "عروض الأسعار" },
+  { href: "/reports", label: "التقارير" },
   { href: "/settings", label: "الإعدادات" },
 ];
 

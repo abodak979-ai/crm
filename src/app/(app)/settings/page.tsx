@@ -28,15 +28,34 @@ async function changeRole(userId: string, formData: FormData) {
   revalidatePath("/settings");
 }
 
+async function createInvite(formData: FormData) {
+  "use server";
+  const { supabase, orgId, user } = await getContext();
+  await supabase.from("invites").insert({ org_id: orgId, role: String(formData.get("role")), created_by: user.id });
+  revalidatePath("/settings");
+}
+
+async function deleteInvite(code: string) {
+  "use server";
+  const { supabase } = await getContext();
+  await supabase.from("invites").delete().eq("code", code);
+  revalidatePath("/settings");
+}
+
 export default async function SettingsPage() {
   const { supabase, role, orgName, vatNumber, user } = await getContext();
   const isOwner = role === "owner";
+  const canInvite = role === "owner" || role === "manager";
+  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "https://saudi-crm.vercel.app";
 
-  const [members, audit] = await Promise.all([
+  const [members, audit, invites] = await Promise.all([
     supabase.from("memberships").select("user_id, role, profiles(full_name)").order("created_at"),
     role === "owner" || role === "manager"
       ? supabase.from("audit_log").select("id, action, entity, created_at").order("created_at", { ascending: false }).limit(50)
       : Promise.resolve({ data: [] as { id: number; action: string; entity: string; created_at: string }[] }),
+    canInvite
+      ? supabase.from("invites").select("code, role, expires_at").is("used_by", null).gt("expires_at", new Date().toISOString())
+      : Promise.resolve({ data: [] as { code: string; role: Role; expires_at: string }[] }),
   ]);
 
   return (
@@ -81,8 +100,42 @@ export default async function SettingsPage() {
             ))}
           </ul>
           <p className="mt-3 text-xs text-slate-500">
-            المالك والمدير والمحاسب يرون كل السجلات، والمندوب يرى سجلاته فقط. دعوة أعضاء جدد بالبريد ضمن التحديث القادم.
+            المالك والمدير والمحاسب يرون كل السجلات، والمندوب يرى سجلاته فقط.
           </p>
+
+          {canInvite && (
+            <div className="mt-6 border-t border-slate-100 pt-4">
+              <h3 className="mb-2 text-sm font-semibold">دعوة عضو جديد</h3>
+              <form action={createInvite} className="mb-3 flex gap-2">
+                <select name="role" className="input" defaultValue="rep">
+                  {(isOwner ? ["manager", "rep", "accountant"] : ["rep", "accountant"]).map((r) => (
+                    <option key={r} value={r}>{ROLE_LABELS[r as Role]}</option>
+                  ))}
+                </select>
+                <button className="btn-primary whitespace-nowrap">إنشاء رمز</button>
+              </form>
+              <ul className="space-y-2 text-sm">
+                {(invites.data ?? []).map((i) => (
+                  <li key={i.code} className="rounded-lg bg-slate-50 p-2">
+                    <div className="flex items-center justify-between">
+                      <span>
+                        <b dir="ltr">{i.code}</b> · {ROLE_LABELS[i.role as Role]} · ينتهي {formatDateTime(i.expires_at)}
+                      </span>
+                      <form action={deleteInvite.bind(null, i.code)}>
+                        <button className="text-xs text-red-600">إلغاء</button>
+                      </form>
+                    </div>
+                    <p className="mt-1 break-all text-xs text-slate-500" dir="ltr">
+                      {origin}/onboarding?code={i.code}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-slate-500">
+                أرسل الرابط للموظف: ينشئ حسابه ثم ينضم تلقائيًا. الرمز صالح 7 أيام ولمرة واحدة.
+              </p>
+            </div>
+          )}
         </section>
       </div>
 
