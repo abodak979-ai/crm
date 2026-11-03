@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { signIn, signUp } from "./actions";
+import { sendLoginLink, signIn, signUp } from "./actions";
 import { HashError } from "./hash-error";
 
 export default async function LoginPage({
@@ -42,6 +42,14 @@ export default async function LoginPage({
           </div>
           <button className="btn-primary w-full">{isSignup ? "إنشاء الحساب" : "دخول"}</button>
         </form>
+        {!isSignup && (
+          <form action={sendLoginLink} className="mt-6 space-y-3 border-t border-slate-100 pt-6">
+            <input type="hidden" name="next" value={next} />
+            <p className="text-sm text-slate-600">أو ادخل بدون كلمة مرور: نرسل لك رابط دخول على بريدك.</p>
+            <input className="input" name="email" type="email" dir="ltr" placeholder="البريد الإلكتروني" required />
+            <button className="btn w-full">أرسل رابط الدخول</button>
+          </form>
+        )}
         <p className="mt-4 text-center text-sm text-slate-500">
           {isSignup ? (
             <>لديك حساب؟ <Link className="text-brand-700 underline" href={`/login?mode=signin${nextQuery}`}>سجّل الدخول</Link></>

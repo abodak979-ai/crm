@@ -24,6 +24,22 @@ export async function signIn(formData: FormData) {
   redirect(next);
 }
 
+/** Passwordless sign-in: emails a one-time login link (existing accounts only). */
+export async function sendLoginLink(formData: FormData) {
+  const supabase = createImplicitClient();
+  const next = safeNext(formData);
+  const origin = (await headers()).get("origin");
+  const { error } = await supabase.auth.signInWithOtp({
+    email: String(formData.get("email")),
+    options: { shouldCreateUser: false, emailRedirectTo: `${origin}/auth/hash?next=${encodeURIComponent(next)}` },
+  });
+  if (error?.status === 429) {
+    redirect("/login?mode=link&error=" + encodeURIComponent("أرسلنا رسائل كثيرة مؤخرًا. انتظر قليلًا ثم حاول مرة ثانية."));
+  }
+  // same message whether or not the account exists
+  redirect("/login?notice=" + encodeURIComponent("إذا كان البريد مسجّلًا، وصلك رابط دخول. افتحه من أي جهاز."));
+}
+
 export async function signUp(formData: FormData) {
   const supabase = createImplicitClient();
   const next = safeNext(formData);
