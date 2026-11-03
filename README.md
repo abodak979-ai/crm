@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# نظام CRM السعودي (MVP)
 
-## Getting Started
+Next.js 15 + Supabase. واجهة عربية RTL، متعدد المنشآت (multi-tenant) مع RLS.
 
-First, run the development server:
+## التشغيل محليًا
 
 ```bash
+cp .env.example .env.local   # ثم ضع رابط Supabase والمفتاح العام
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ما تم بناؤه (من الـ PRD)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| المتطلب | الحالة |
+|---|---|
+| FR-02 بطاقة العميل + سجل زمني + بحث بالعربي والجوال | ✅ |
+| FR-03 خطوط مبيعات متعددة، سحب وإفلات، سبب خسارة إلزامي، قيمة بالريال | ✅ |
+| FR-04 المهام والتذكيرات، مهام اليوم والمتأخرة | ✅ (بدون إشعارات جوال/بريد) |
+| FR-05 عروض أسعار بضريبة 15%، PDF عبر الطباعة، إرسال بالواتساب، الحالة | ✅ |
+| FR-06 سجل موافقات PDPL، إلغاء بكلمة «إلغاء/STOP»، سجل تدقيق | ✅ |
+| FR-08 أدوار (مالك، مدير، مندوب، محاسب)، المندوب يرى سجلاته فقط | ✅ |
+| FR-09 استيراد CSV بقالب عربي وكشف التكرار بالجوال | ✅ |
+| FR-01 صندوق الواتساب | جداول جاهزة، يحتاج مزوّد WhatsApp Business API |
+| FR-07 التبديل للإنجليزية | لاحقًا (العربية فقط الآن) |
+| FR-10 تطبيق الجوال | الواجهة متجاوبة؛ التطبيق الأصلي لاحقًا |
+| FR-11 إلى FR-15 | المرحلة التالية |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## قاعدة البيانات
 
-## Learn More
+مشروع Supabase: `vmhggguewuerlvklouql`. منطق الأعمال في قاعدة البيانات:
 
-To learn more about Next.js, take a look at the following resources:
+- `create_organization(name)`: تنشئ المنشأة والمالك وخط مبيعات افتراضي.
+- مشغّلات: ترقيم العروض لكل منشأة، حساب الضريبة، فرض سبب الخسارة، سجل التدقيق، إلغاء الموافقة بكلمة.
+- `marketing_allowed(contact_id)`: يجب فحصها قبل أي إرسال تسويقي.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+لسحب المخطط كملفات migrations: `npx supabase db pull`.
