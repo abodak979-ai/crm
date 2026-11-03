@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signIn, signUp } from "./actions";
+import { HashError } from "./hash-error";
 
 export default async function LoginPage({
   searchParams,
@@ -15,6 +16,7 @@ export default async function LoginPage({
       <div className="card w-full max-w-sm">
         <h1 className="mb-1 text-2xl font-bold">{isSignup ? "إنشاء حساب" : "تسجيل الدخول"}</h1>
         <p className="mb-6 text-sm text-slate-500">محادثاتك وصفقاتك وعروضك في مكان واحد</p>
+        <HashError />
         {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         {notice && <p className="mb-4 rounded-lg bg-brand-50 p-3 text-sm text-brand-800">{notice}</p>}
         <form action={isSignup ? signUp : signIn} className="space-y-4">
