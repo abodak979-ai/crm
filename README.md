@@ -10,6 +10,10 @@ npm install
 npm run dev
 ```
 
+## النشر
+
+الإنتاج: https://saudi-crm.vercel.app. كل دفع (push) إلى `main` يُنشر تلقائيًا على Vercel.
+
 ## ما تم بناؤه (من الـ PRD)
 
 | المتطلب | الحالة |
