@@ -32,6 +32,11 @@ export default async function LoginPage({
           <div>
             <label className="label" htmlFor="password">كلمة المرور</label>
             <input className="input" id="password" name="password" type="password" dir="ltr" minLength={8} required />
+            {!isSignup && (
+              <Link href="/forgot" className="mt-1 inline-block text-xs text-brand-700 hover:underline">
+                نسيت كلمة المرور؟
+              </Link>
+            )}
           </div>
           <button className="btn-primary w-full">{isSignup ? "إنشاء الحساب" : "دخول"}</button>
         </form>
